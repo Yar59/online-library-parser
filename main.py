@@ -70,8 +70,8 @@ def download_image(image_url, book_id, book_title, directory="./images"):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("start_id", help="id первой книги", default=0)
-    parser.add_argument("end_id", help="id последней книги", default=0)
+    parser.add_argument("start_id", help="id первой книги", default=0, nargs='?')
+    parser.add_argument("end_id", help="id последней книги", default=10, nargs='?')
     parser.add_argument("--books_dir", help="папка для сохранения текстовых файлов", default="./books")
     parser.add_argument("--images_dir", help="папка для сохранения обложек  книг", default="./images")
     args = parser.parse_args()
