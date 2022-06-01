@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 from urllib.parse import urljoin, urlparse
@@ -13,9 +14,6 @@ class ErrRedirection(Exception):
 
 BOOKS_URL = "https://tululu.org/"
 BOOKS_DOWNLOAD_URL = "https://tululu.org/txt.php"
-COUNT_OF_BOOKS = 10
-BOOKS_DIR = "./books"
-IMAGES_DIR = "./images"
 
 
 def download_files(url, file_path, headers={}, params={}):
@@ -71,11 +69,23 @@ def download_image(image_url, book_id, book_title, directory="./images"):
 
 
 def main():
-    os.makedirs(BOOKS_DIR, exist_ok=True)
-    os.makedirs(IMAGES_DIR, exist_ok=True)
-    for number in range(COUNT_OF_BOOKS):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("start_id", help="id первой книги", default=0)
+    parser.add_argument("end_id", help="id последней книги", default=0)
+    parser.add_argument("--books_dir", help="папка для сохранения текстовых файлов", default="./books")
+    parser.add_argument("--images_dir", help="папка для сохранения обложек  книг", default="./images")
+    args = parser.parse_args()
+    start_id = int(args.start_id)
+    end_id = int(args.end_id)
+    books_dir = args.books_dir
+    images_dir = args.images_dir
+
+    os.makedirs(books_dir, exist_ok=True)
+    os.makedirs(images_dir, exist_ok=True)
+
+    for number in range(start_id, end_id):
         try:
-            book_id = number + 1
+            book_id = number
 
             book_url = f"{BOOKS_URL}b{book_id}"
             response = requests.get(book_url)
@@ -83,8 +93,8 @@ def main():
             check_for_redirect(response)
             book_info = parse_book_page(response, book_url)
 
-            download_txt(book_id, book_info["title"], BOOKS_DIR)
-            download_image(book_info["pic_url"], book_id, book_info["title"], IMAGES_DIR)
+            download_txt(book_id, book_info["title"], books_dir)
+            download_image(book_info["pic_url"], book_id, book_info["title"], images_dir)
 
         except requests.exceptions.HTTPError as error:
             logging.warning(error)
