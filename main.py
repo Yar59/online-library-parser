@@ -83,7 +83,7 @@ def main():
     os.makedirs(books_dir, exist_ok=True)
     os.makedirs(images_dir, exist_ok=True)
 
-    for number in range(start_id, end_id):
+    for number in range(start_id, end_id+1):
         try:
             book_id = number
 
