@@ -34,16 +34,20 @@ def parse_book_page(book_url):
     book_info = {
         "title": "",
         "author": "",
-        "pic_url": ""
+        "pic_url": "",
+        "comments": "",
     }
     response = requests.get(book_url)
     response.raise_for_status()
     check_for_redirect(response)
     soup = BeautifulSoup(response.text, 'lxml')
+
     page_title = soup.select_one("h1").text
-    pic_tag_src = soup.select_one('div.bookimage img')["src"]
+    pic_tag_src = soup.select_one("div.bookimage img")["src"]
+    book_info["comments"]= soup.select("div.texts span.black")
     book_info["pic_url"] = urljoin(book_url, pic_tag_src)
     book_info["title"], book_info["author"] = page_title.split("::")
+
     return book_info
 
 
@@ -74,8 +78,8 @@ def main():
             book_id = number + 1
             book_url = f"{BOOKS_URL}b{book_id}"
             book_info = parse_book_page(book_url)
-            download_txt(book_id, book_info["title"], BOOKS_DIR)
-            download_image(book_info["pic_url"], book_id, book_info["title"], IMAGES_DIR)
+            #download_txt(book_id, book_info["title"], BOOKS_DIR)
+            #download_image(book_info["pic_url"], book_id, book_info["title"], IMAGES_DIR)
         except requests.exceptions.HTTPError as error:
             logging.warning(error)
         except ErrRedirection:
