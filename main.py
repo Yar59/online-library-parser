@@ -3,11 +3,18 @@ import os
 import logging
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
+from urllib.parse import urljoin, urlparse
+
+
+class ErrRedirection(Exception):
+    pass
+
 
 BOOKS_URL = "https://tululu.org/"
 BOOKS_DOWNLOAD_URL = "https://tululu.org/txt.php"
 COUNT_OF_BOOKS = 10
-DIR_PATH = "./books"
+BOOKS_DIR = "./books"
+IMAGES_DIR = "./images"
 
 
 def download_files(url, file_path, headers={}, params={}):
@@ -19,19 +26,25 @@ def download_files(url, file_path, headers={}, params={}):
 
 
 def check_for_redirect(response):
-    if len(response.history) > 0:
-        raise requests.exceptions.HTTPError
+    if response.url == BOOKS_URL:
+        raise ErrRedirection("Redirection")
 
 
 def parse_book_page(book_url):
+    book_info = {
+        "title": "",
+        "author": "",
+        "pic_url": ""
+    }
     response = requests.get(book_url)
     response.raise_for_status()
+    check_for_redirect(response)
     soup = BeautifulSoup(response.text, 'lxml')
-    book_title = soup.find("h1").text
-    book_author = "отсутствует"
-    if "::" in book_title:
-        book_title, book_author = book_title.split("::")
-    return book_title.strip(), book_author.strip()
+    page_title = soup.select_one("h1").text
+    pic_tag_src = soup.select_one('div.bookimage img')["src"]
+    book_info["pic_url"] = urljoin(book_url, pic_tag_src)
+    book_info["title"], book_info["author"] = page_title.split("::")
+    return book_info
 
 
 def download_txt(book_id, book_title, directory="./books"):
@@ -41,19 +54,33 @@ def download_txt(book_id, book_title, directory="./books"):
     payload = {
         "id": book_id
     }
-    try:
-        download_files(BOOKS_DOWNLOAD_URL, book_path, params=payload)
-    except requests.exceptions.HTTPError:
-        logging.warning(f"Redirection for book with id {book_id}")
+
+    download_files(BOOKS_DOWNLOAD_URL, book_path, params=payload)
+
+
+def download_image(image_url, book_id, book_title, directory="./images"):
+    extension = os.path.splitext(urlparse(image_url).path)[1]
+    image_file_name = sanitize_filename(f"{book_id}.{book_title}{extension}")
+    image_path = os.path.join(directory, image_file_name)
+
+    download_files(image_url, image_path)
+
+
+def main():
+    os.makedirs(BOOKS_DIR, exist_ok=True)
+    os.makedirs(IMAGES_DIR, exist_ok=True)
+    for number in range(COUNT_OF_BOOKS):
+        try:
+            book_id = number + 1
+            book_url = f"{BOOKS_URL}b{book_id}"
+            book_info = parse_book_page(book_url)
+            download_txt(book_id, book_info["title"], BOOKS_DIR)
+            download_image(book_info["pic_url"], book_id, book_info["title"], IMAGES_DIR)
+        except requests.exceptions.HTTPError as error:
+            logging.warning(error)
+        except ErrRedirection:
+            logging.warning("Redirection")
 
 
 if __name__ == '__main__':
-    try:
-        os.makedirs(DIR_PATH, exist_ok=True)
-        for number in range(COUNT_OF_BOOKS):
-            book_id = number + 1
-            book_url = f"{BOOKS_URL}b{book_id}"
-            book_title, book_author = parse_book_page(book_url)
-            download_txt(book_id, book_title, DIR_PATH)
-    except requests.exceptions.HTTPError as error:
-        logging.warning(error)
+    main()
