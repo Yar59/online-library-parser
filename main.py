@@ -68,6 +68,12 @@ def download_image(image_url, book_id, book_title, directory="./images"):
     download_files(image_url, image_path)
 
 
+def display_downloaded_books_info(book_info):
+    print("Название книги:", book_info["title"])
+    print("Автор:", book_info["author"])
+    print("Жанр:", book_info["genres"])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("start_id", help="id первой книги", default=0, nargs='?')
@@ -92,6 +98,8 @@ def main():
             response.raise_for_status()
             check_for_redirect(response)
             book_info = parse_book_page(response, book_url)
+
+            display_downloaded_books_info(book_info)
 
             download_txt(book_id, book_info["title"], books_dir)
             download_image(book_info["pic_url"], book_id, book_info["title"], images_dir)
