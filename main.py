@@ -1,9 +1,10 @@
-import requests
-import os
 import logging
+import os
+from urllib.parse import urljoin, urlparse
+
+import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
-from urllib.parse import urljoin, urlparse
 
 
 class ErrRedirection(Exception):
@@ -87,7 +88,7 @@ def main():
 
         except requests.exceptions.HTTPError as error:
             logging.warning(error)
-            
+
         except ErrRedirection:
             logging.warning("Redirection")
 
