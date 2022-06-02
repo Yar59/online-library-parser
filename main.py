@@ -31,22 +31,21 @@ def check_for_redirect(response):
 
 
 def parse_book_page(html_page, book_url):
-    book_params = {
-        "title": "",
-        "author": "",
-        "pic_url": "",
-        "comments": "",
-        "genre": "",
-    }
     soup = BeautifulSoup(html_page.text, 'lxml')
 
     page_title = soup.select_one("h1").text
     pic_tag_src = soup.select_one("div.bookimage img")["src"]
-    book_params["comments"] = [comment.text for comment in soup.select("div.texts span.black")]
-    book_params["genres"] = [genre.text for genre in soup.select("span.d_book a")]
-    book_params["pic_url"] = urljoin(book_url, pic_tag_src)
-    book_params["title"], book_params["author"] = page_title.split("::")
-
+    comments = [comment.text for comment in soup.select("div.texts span.black")]
+    genres = [genre.text for genre in soup.select("span.d_book a")]
+    pic_url = urljoin(book_url, pic_tag_src)
+    title, author = page_title.split("::")
+    book_params = {
+        "title": title,
+        "author": author,
+        "pic_url": pic_url,
+        "comments": comments,
+        "genres": genres,
+    }
     return book_params
 
 
@@ -102,19 +101,20 @@ def main():
 
                 download_txt(book_id, book_params["title"], books_dir)
                 download_image(book_params["pic_url"], book_id, book_params["title"], images_dir)
+
+                display_books_params(book_params)
                 break
             except requests.exceptions.HTTPError as error:
                 logging.warning(error)
 
             except ErrRedirection:
                 logging.warning("Redirection")
+                break
 
             except requests.exceptions.ConnectionError:
                 logging.warning("Connection Error\nPlease check your internet connection")
                 sleep(5)
                 logging.warning("Trying to reconnect")
-
-        display_books_params(book_params)
 
 
 if __name__ == '__main__':
