@@ -90,16 +90,14 @@ def main():
     os.makedirs(images_dir, exist_ok=True)
 
     for number in range(start_id, end_id+1):
-        try:
-            book_id = number
+        book_id = number
+        book_url = f"{BOOKS_URL}b{book_id}"
 
-            book_url = f"{BOOKS_URL}b{book_id}"
+        try:
             response = requests.get(book_url)
             response.raise_for_status()
             check_for_redirect(response)
             book_params = parse_book_page(response, book_url)
-
-            display_books_params(book_params)
 
             download_txt(book_id, book_params["title"], books_dir)
             download_image(book_params["pic_url"], book_id, book_params["title"], images_dir)
@@ -109,6 +107,8 @@ def main():
 
         except ErrRedirection:
             logging.warning("Redirection")
+            
+        display_books_params(book_params)
 
 
 if __name__ == '__main__':
