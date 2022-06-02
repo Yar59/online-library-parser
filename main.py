@@ -40,8 +40,8 @@ def parse_book_page(html_page, book_url):
     pic_url = urljoin(book_url, pic_tag_src)
     title, author = page_title.split("::")
     book_params = {
-        "title": title,
-        "author": author,
+        "title": title.strip(),
+        "author": author.strip(),
         "pic_url": pic_url,
         "comments": comments,
         "genres": genres,
