@@ -26,7 +26,7 @@ def download_files(url, file_path, headers={}, params={}):
 
 
 def check_for_redirect(response):
-    if response.url == BOOKS_URL:
+    if response.history:
         raise ErrRedirection("Redirection")
 
 
@@ -90,7 +90,7 @@ def main():
     os.makedirs(images_dir, exist_ok=True)
 
     for book_id in range(start_id, end_id+1):
-        book_url = f"{BOOKS_URL}b{book_id}"
+        book_url = f"{BOOKS_URL}b{book_id}/"
         while True:
             try:
                 response = requests.get(book_url)
