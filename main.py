@@ -76,13 +76,13 @@ def display_books_params(book_params):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("start_id", help="id первой книги", default=0, nargs='?')
-    parser.add_argument("end_id", help="id последней книги", default=10, nargs='?')
+    parser.add_argument("start_id", help="id первой книги", default=0, nargs="?", type=int)
+    parser.add_argument("end_id", help="id последней книги", default=10, nargs="?", type=int)
     parser.add_argument("--books_dir", help="папка для сохранения текстовых файлов", default="./books")
     parser.add_argument("--images_dir", help="папка для сохранения обложек  книг", default="./images")
     args = parser.parse_args()
-    start_id = int(args.start_id)
-    end_id = int(args.end_id)
+    start_id = args.start_id
+    end_id = args.end_id
     books_dir = args.books_dir
     images_dir = args.images_dir
 
