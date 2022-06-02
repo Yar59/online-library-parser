@@ -89,8 +89,7 @@ def main():
     os.makedirs(books_dir, exist_ok=True)
     os.makedirs(images_dir, exist_ok=True)
 
-    for number in range(start_id, end_id+1):
-        book_id = number
+    for book_id in range(start_id, end_id+1):
         book_url = f"{BOOKS_URL}b{book_id}"
         while True:
             try:
@@ -106,6 +105,7 @@ def main():
                 break
             except requests.exceptions.HTTPError as error:
                 logging.warning(error)
+                break
 
             except ErrRedirection:
                 logging.warning("Redirection")
