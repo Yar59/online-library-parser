@@ -30,7 +30,7 @@ def check_for_redirect(response):
 
 
 def parse_book_page(html_page, book_url):
-    book_info = {
+    book_params = {
         "title": "",
         "author": "",
         "pic_url": "",
@@ -41,12 +41,12 @@ def parse_book_page(html_page, book_url):
 
     page_title = soup.select_one("h1").text
     pic_tag_src = soup.select_one("div.bookimage img")["src"]
-    book_info["comments"] = [comment.text for comment in soup.select("div.texts span.black")]
-    book_info["genres"] = [genre.text for genre in soup.select("span.d_book a")]
-    book_info["pic_url"] = urljoin(book_url, pic_tag_src)
-    book_info["title"], book_info["author"] = page_title.split("::")
+    book_params["comments"] = [comment.text for comment in soup.select("div.texts span.black")]
+    book_params["genres"] = [genre.text for genre in soup.select("span.d_book a")]
+    book_params["pic_url"] = urljoin(book_url, pic_tag_src)
+    book_params["title"], book_params["author"] = page_title.split("::")
 
-    return book_info
+    return book_params
 
 
 def download_txt(book_id, book_title, directory="./books"):
@@ -68,10 +68,10 @@ def download_image(image_url, book_id, book_title, directory="./images"):
     download_files(image_url, image_path)
 
 
-def display_books_params(book_info):
-    print("Название книги:", book_info["title"])
-    print("Автор:", book_info["author"])
-    print("Жанр:", book_info["genres"])
+def display_books_params(book_params):
+    print("Название книги:", book_params["title"])
+    print("Автор:", book_params["author"])
+    print("Жанр:", book_params["genres"])
 
 
 def main():
@@ -97,12 +97,12 @@ def main():
             response = requests.get(book_url)
             response.raise_for_status()
             check_for_redirect(response)
-            book_info = parse_book_page(response, book_url)
+            book_params = parse_book_page(response, book_url)
 
-            display_books_params(book_info)
+            display_books_params(book_params)
 
-            download_txt(book_id, book_info["title"], books_dir)
-            download_image(book_info["pic_url"], book_id, book_info["title"], images_dir)
+            download_txt(book_id, book_params["title"], books_dir)
+            download_image(book_params["pic_url"], book_id, book_params["title"], images_dir)
 
         except requests.exceptions.HTTPError as error:
             logging.warning(error)
