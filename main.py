@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from time import sleep
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -92,22 +93,27 @@ def main():
     for number in range(start_id, end_id+1):
         book_id = number
         book_url = f"{BOOKS_URL}b{book_id}"
+        while True:
+            try:
+                response = requests.get(book_url)
+                response.raise_for_status()
+                check_for_redirect(response)
+                book_params = parse_book_page(response, book_url)
 
-        try:
-            response = requests.get(book_url)
-            response.raise_for_status()
-            check_for_redirect(response)
-            book_params = parse_book_page(response, book_url)
+                download_txt(book_id, book_params["title"], books_dir)
+                download_image(book_params["pic_url"], book_id, book_params["title"], images_dir)
+                break
+            except requests.exceptions.HTTPError as error:
+                logging.warning(error)
 
-            download_txt(book_id, book_params["title"], books_dir)
-            download_image(book_params["pic_url"], book_id, book_params["title"], images_dir)
+            except ErrRedirection:
+                logging.warning("Redirection")
 
-        except requests.exceptions.HTTPError as error:
-            logging.warning(error)
+            except requests.exceptions.ConnectionError:
+                logging.warning("Connection Error\nPlease check your internet connection")
+                sleep(5)
+                logging.warning("Trying to reconnect")
 
-        except ErrRedirection:
-            logging.warning("Redirection")
-            
         display_books_params(book_params)
 
 
