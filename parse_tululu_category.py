@@ -1,32 +1,74 @@
 import argparse
 import logging
 import os
-from urllib.parse import urljoin, urlparse
+from time import sleep
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
 
-CATEGORY_ID = "l55"
-PAGES = 10
+from main import download_txt, download_image, check_for_redirect, parse_book_page, ErrRedirection, BOOKS_URL
 
 
 def parse_category_page(html_page):
     soup = BeautifulSoup(html_page.text, 'lxml')
 
-    books_ids = [id['href'] for id in soup.select('div.bookimage a')]
-    print(books_ids)
+    books_id = [id['href'] for id in soup.select('div.bookimage a')]
+    return books_id
 
 
 def main():
-    try:
-        for page in range(1, PAGES+1):
-            category_url = urljoin('https://tululu.org/', CATEGORY_ID)
-            category_page_url = f'{category_url}/{str(page)}/'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("start_page", help="номер первой страницы категории", default=1, nargs="?", type=int)
+    parser.add_argument("end_page", help="номер первой страницы категории", default=10, nargs="?", type=int)
+    parser.add_argument("--category_id", help="id категории, например l55", default="l55")
+    parser.add_argument("--books_dir", help="папка для сохранения текстовых файлов", default="./books")
+    parser.add_argument("--images_dir", help="папка для сохранения обложек  книг", default="./images")
+    args = parser.parse_args()
+    start_page = args.start_page
+    end_page = args.end_page
+    books_dir = args.books_dir
+    images_dir = args.images_dir
+    category_id = args.category_id
+    os.makedirs(books_dir, exist_ok=True)
+    os.makedirs(images_dir, exist_ok=True)
+
+    for page in range(start_page, end_page+1):
+        category_url = urljoin('https://tululu.org/', category_id)
+        category_page_url = f'{category_url}/{str(page)}/'
+        try:
             page_content = requests.get(category_page_url)
             page_content.raise_for_status()
-            parse_category_page(page_content)
-    except requests.exceptions.HTTPError as error:
-        logging.warning(error)
+        except requests.exceptions.HTTPError as error:
+            logging.warning(error)
+        books_id = parse_category_page(page_content)
+        for book_id in books_id:
+            numeric_book_id = book_id.replace('b', '').replace('/', '')
+            book_url = f"{BOOKS_URL}b{numeric_book_id}/"
+            print(book_url)
+            while True:
+                try:
+                    response = requests.get(book_url)
+                    response.raise_for_status()
+                    check_for_redirect(response)
+                    book_params = parse_book_page(response, book_url)
+
+                    download_txt(numeric_book_id, book_params["title"], books_dir)
+                    download_image(book_params["pic_url"], numeric_book_id, book_params["title"], images_dir)
+
+                    break
+                except requests.exceptions.HTTPError as error:
+                    logging.warning(error)
+                    break
+
+                except ErrRedirection:
+                    logging.warning("Redirection")
+                    break
+
+                except requests.exceptions.ConnectionError:
+                    logging.warning("Connection Error\nPlease check your internet connection")
+                    sleep(5)
+                    logging.warning("Trying to reconnect")
 
 
 if __name__ == '__main__':
