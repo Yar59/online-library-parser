@@ -58,6 +58,7 @@ def download_txt(book_id, book_title, directory="./books"):
     }
 
     download_files(BOOKS_DOWNLOAD_URL, book_path, params=payload)
+    return book_path
 
 
 def download_image(image_url, book_id, book_title, directory="./images"):
@@ -66,7 +67,7 @@ def download_image(image_url, book_id, book_title, directory="./images"):
     image_path = os.path.join(directory, image_file_name)
 
     download_files(image_url, image_path)
-
+    return image_path
 
 def display_books_params(book_params):
     print("Название книги:", book_params["title"])

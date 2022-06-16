@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 from time import sleep
@@ -33,6 +34,8 @@ def main():
     os.makedirs(books_dir, exist_ok=True)
     os.makedirs(images_dir, exist_ok=True)
 
+    books_params = []
+
     for page in range(start_page, end_page+1):
         category_url = urljoin('https://tululu.org/', category_id)
         category_page_url = f'{category_url}/{str(page)}/'
@@ -45,7 +48,6 @@ def main():
         for book_id in books_id:
             numeric_book_id = book_id.replace('b', '').replace('/', '')
             book_url = f"{BOOKS_URL}b{numeric_book_id}/"
-            print(book_url)
             while True:
                 try:
                     response = requests.get(book_url)
@@ -53,9 +55,14 @@ def main():
                     check_for_redirect(response)
                     book_params = parse_book_page(response, book_url)
 
-                    download_txt(numeric_book_id, book_params["title"], books_dir)
-                    download_image(book_params["pic_url"], numeric_book_id, book_params["title"], images_dir)
-
+                    book_params['book_path'] = download_txt(numeric_book_id, book_params["title"], books_dir)
+                    book_params['image_path'] = download_image(
+                        book_params["pic_url"],
+                        numeric_book_id,
+                        book_params["title"],
+                        images_dir
+                    )
+                    books_params.append(book_params)
                     break
                 except requests.exceptions.HTTPError as error:
                     logging.warning(error)
@@ -69,6 +76,9 @@ def main():
                     logging.warning("Connection Error\nPlease check your internet connection")
                     sleep(5)
                     logging.warning("Trying to reconnect")
+                    
+    with open("books_params.json", "w", encoding='utf8') as json_file:
+        json.dump(books_params, json_file, ensure_ascii=False)
 
 
 if __name__ == '__main__':
