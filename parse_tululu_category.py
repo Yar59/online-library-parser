@@ -21,7 +21,7 @@ def parse_category_page(html_page):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start_page", help="номер первой страницы категории", default=1, nargs="?", type=int)
-    parser.add_argument("--end_page", help="номер первой страницы категории", default=1000, nargs="?", type=int)
+    parser.add_argument("--end_page", help="номер последней страницы категории", default=1000, nargs="?", type=int)
     parser.add_argument("--category_id", help="id категории, например l55", default="l55")
     parser.add_argument("--books_dir", help="папка для сохранения текстовых файлов", default="./books")
     parser.add_argument("--images_dir", help="папка для сохранения обложек  книг", default="./images")
