@@ -49,7 +49,7 @@ def main():
     while page < end_page:
 
         category_url = urljoin('https://tululu.org/', category_id)
-        category_page_url = f'{category_url}/{str(page)}/'
+        category_page_url = f'{category_url}/{page}/'
         try:
             page_content = requests.get(category_page_url)
             page_content.raise_for_status()
