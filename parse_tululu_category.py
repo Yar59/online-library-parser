@@ -45,8 +45,9 @@ def main():
 
     books_params = []
 
-    while True:
-        page = start_page
+    page = start_page
+    while page < end_page:
+
         category_url = urljoin('https://tululu.org/', category_id)
         category_page_url = f'{category_url}/{str(page)}/'
         try:
@@ -91,9 +92,8 @@ def main():
                     logging.warning("Connection Error\nPlease check your internet connection")
                     sleep(5)
                     logging.warning("Trying to reconnect")
-        if page == end_page:
-            break
         page += 1
+
     params_file_path = os.path.join(json_dir, "books_params.json")
     with open(params_file_path, "w", encoding='utf8') as json_file:
         json.dump(books_params, json_file, ensure_ascii=False)
