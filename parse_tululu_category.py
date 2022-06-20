@@ -53,12 +53,14 @@ def main():
         try:
             page_content = requests.get(category_page_url)
             page_content.raise_for_status()
+            check_for_redirect(page_content)
+            books_id = parse_category_page(page_content)
         except requests.exceptions.HTTPError as error:
             logging.warning(error)
         except ErrRedirection:
             logging.warning("pages ran out")
             break
-        books_id = parse_category_page(page_content)
+
         for book_id in books_id:
             numeric_book_id = book_id.replace('b', '').replace('/', '')
             book_url = f"{BOOKS_URL}b{numeric_book_id}/"
