@@ -50,16 +50,22 @@ def main():
 
         category_url = urljoin('https://tululu.org/', category_id)
         category_page_url = f'{category_url}/{page}/'
-        try:
-            page_content = requests.get(category_page_url)
-            page_content.raise_for_status()
-            check_for_redirect(page_content)
-            books_id = parse_category_page(page_content)
-        except requests.exceptions.HTTPError as error:
-            logging.warning(error)
-        except ErrRedirection:
-            logging.warning("pages ran out")
-            break
+        while True:
+            try:
+                page_content = requests.get(category_page_url)
+                page_content.raise_for_status()
+                check_for_redirect(page_content)
+                books_id = parse_category_page(page_content)
+            except requests.exceptions.HTTPError as error:
+                logging.warning(error)
+                break
+            except ErrRedirection:
+                logging.warning("Redirection")
+                break
+            except requests.exceptions.ConnectionError:
+                logging.warning("Connection Error\nPlease check your internet connection")
+                sleep(5)
+                logging.warning("Trying to reconnect")
 
         for book_id in books_id:
             numeric_book_id = book_id.replace('b', '').replace('/', '')
