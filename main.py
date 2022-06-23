@@ -69,6 +69,7 @@ def download_image(image_url, book_id, book_title, directory="./images"):
     download_files(image_url, image_path)
     return image_path
 
+
 def display_books_params(book_params):
     print("Название книги:", book_params["title"])
     print("Автор:", book_params["author"])
