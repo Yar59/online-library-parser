@@ -69,7 +69,7 @@ def main():
 
         for book_id in books_id:
             numeric_book_id = book_id.replace('b', '').replace('/', '')
-            book_url = f"{BOOKS_URL}b{numeric_book_id}/"
+            book_url = urljoin(BOOKS_URL, book_id)
             while True:
                 try:
                     response = requests.get(book_url)
