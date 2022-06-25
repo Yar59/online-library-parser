@@ -117,7 +117,3 @@ dmypy.json
 .idea/
 test.py
 books/
-books_params.json
-
-index.html
-pages/
