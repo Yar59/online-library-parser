@@ -43,7 +43,7 @@ def main():
     os.makedirs(images_dir, exist_ok=True)
     os.makedirs(json_dir, exist_ok=True)
 
-    books_params = []
+    all_books_params = []
 
     page = start_page
     while page < end_page:
@@ -86,7 +86,7 @@ def main():
                                 book_params["title"],
                                 images_dir
                             )
-                        books_params.append(book_params)
+                        all_books_params.append(book_params)
                         break
                     except requests.exceptions.HTTPError as error:
                         logging.warning(error)
@@ -101,10 +101,11 @@ def main():
                         sleep(5)
                         logging.warning("Trying to reconnect")
             page += 1
+            break
 
     params_file_path = os.path.join(json_dir, "books_params.json")
     with open(params_file_path, "w", encoding='utf8') as json_file:
-        json.dump(books_params, json_file, ensure_ascii=False)
+        json.dump(all_books_params, json_file, ensure_ascii=False)
 
 
 if __name__ == '__main__':
