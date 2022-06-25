@@ -1,8 +1,7 @@
 import json
-import os
-import logging
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from more_itertools import chunked
 
 JSON_PATH = './books_params.json'
 
@@ -15,9 +14,9 @@ def main():
         autoescape=select_autoescape(['html'])
     )
     template = env.get_template('template.html')
-
+    paired_books = chunked(books_params, 2)
     rendered_page = template.render(
-        books=books_params
+        paired_books=paired_books
     )
 
     with open('index.html', 'w', encoding="utf8") as file:
