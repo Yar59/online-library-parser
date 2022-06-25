@@ -67,40 +67,40 @@ def main():
                 sleep(5)
                 logging.warning("Trying to reconnect")
 
-        for book_id in books_id:
-            numeric_book_id = book_id.replace('b', '').replace('/', '')
-            book_url = urljoin(BOOKS_URL, book_id)
-            while True:
-                try:
-                    response = requests.get(book_url)
-                    response.raise_for_status()
-                    check_for_redirect(response)
-                    book_params = parse_book_page(response, book_url)
+            for book_id in books_id:
+                numeric_book_id = book_id.replace('b', '').replace('/', '')
+                book_url = urljoin(BOOKS_URL, book_id)
+                while True:
+                    try:
+                        response = requests.get(book_url)
+                        response.raise_for_status()
+                        check_for_redirect(response)
+                        book_params = parse_book_page(response, book_url)
 
-                    if not skip_txt:
-                        book_params['book_path'] = download_txt(numeric_book_id, book_params["title"], books_dir)
-                    if not skip_imgs:
-                        book_params['image_path'] = download_image(
-                            book_params["pic_url"],
-                            numeric_book_id,
-                            book_params["title"],
-                            images_dir
-                        )
-                    books_params.append(book_params)
-                    break
-                except requests.exceptions.HTTPError as error:
-                    logging.warning(error)
-                    break
+                        if not skip_txt:
+                            book_params['book_path'] = download_txt(numeric_book_id, book_params["title"], books_dir)
+                        if not skip_imgs:
+                            book_params['image_path'] = download_image(
+                                book_params["pic_url"],
+                                numeric_book_id,
+                                book_params["title"],
+                                images_dir
+                            )
+                        books_params.append(book_params)
+                        break
+                    except requests.exceptions.HTTPError as error:
+                        logging.warning(error)
+                        break
 
-                except ErrRedirection:
-                    logging.warning("Redirection")
-                    break
+                    except ErrRedirection:
+                        logging.warning("Redirection")
+                        break
 
-                except requests.exceptions.ConnectionError:
-                    logging.warning("Connection Error\nPlease check your internet connection")
-                    sleep(5)
-                    logging.warning("Trying to reconnect")
-        page += 1
+                    except requests.exceptions.ConnectionError:
+                        logging.warning("Connection Error\nPlease check your internet connection")
+                        sleep(5)
+                        logging.warning("Trying to reconnect")
+            page += 1
 
     params_file_path = os.path.join(json_dir, "books_params.json")
     with open(params_file_path, "w", encoding='utf8') as json_file:
