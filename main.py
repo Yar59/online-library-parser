@@ -52,6 +52,7 @@ def parse_book_page(html_page, book_url):
 def download_txt(book_id, book_title, directory="./books"):
     book_file_name = sanitize_filename(f"{book_id}.{book_title}.txt")
     book_path = os.path.join(directory, book_file_name)
+    book_path = book_path.replace(os.sep, '/')
 
     payload = {
         "id": book_id
@@ -65,7 +66,7 @@ def download_image(image_url, book_id, book_title, directory="./images"):
     extension = os.path.splitext(urlparse(image_url).path)[1]
     image_file_name = sanitize_filename(f"{book_id}.{book_title}{extension}")
     image_path = os.path.join(directory, image_file_name)
-
+    image_path = image_path.replace(os.sep, '/')
     download_files(image_url, image_path)
     return image_path
 
